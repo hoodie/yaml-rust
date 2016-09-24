@@ -2,10 +2,10 @@ use std::collections::BTreeMap;
 use std::ops::Index;
 use std::string;
 use std::i64;
-use std::str::FromStr;
 use std::mem;
 use parser::*;
 use scanner::{TScalarStyle, ScanError, TokenType};
+use emitter::{EmitError,YamlEmitter};
 
 /// A YAML node is stored as this `Yaml` enumeration, which provides an easy way to
 /// access your YAML document.
@@ -201,6 +201,7 @@ impl YamlLoader {
         try!(parser.load(&mut loader, true));
         Ok(loader.docs)
     }
+
 }
 
 macro_rules! define_as (
@@ -254,6 +255,18 @@ impl Yaml {
             },
             _ => None
         }
+    }
+
+    pub fn dump(&self) -> Result<String, EmitError>{
+        let mut buf = String::new();
+        {
+            let mut emitter = YamlEmitter::new(&mut buf);
+            let dump = emitter.dump(&self);
+            if dump.is_err(){
+                return Err(dump.unwrap_err());
+            }
+        }
+        Ok(buf)
     }
 }
 
